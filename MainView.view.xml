@@ -1,0 +1,250 @@
+<mvc:View
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    controllerName="sb.custom.plugins.assemblycomponent.controller.MainView"
+    width="100%"
+    height="100%">
+
+    <Panel
+        id="panelPlugin"
+        width="100%"
+        height="100%"
+        expandable="false"
+        backgroundDesign="Transparent"
+        class="sapUiNoContentPadding">
+
+        <!-- Header -->
+        <headerToolbar>
+            <OverflowToolbar height="3rem">
+                <Button
+                    id="backButton"
+                    visible="false"
+                    text="Back"
+                    icon="sap-icon://nav-back"
+                    press="onBackPress"/>
+                <Title id="headerTitle" text="Planned Components" level="H4"/>
+                <ToolbarSpacer/>
+                <Text text="{= 'Plant: ' + ${vm>/plantValue} }"
+                      visible="{= !!${vm>/plantValue} }"
+                      class="sapUiSmallMarginEnd"/>
+                <Text text="{= 'SFC: ' + ${vm>/sfcValue} }"
+                      visible="{= !!${vm>/sfcValue} }"/>
+                <Button
+                    icon="sap-icon://refresh"
+                    tooltip="Refresh"
+                    type="Transparent"
+                    press="onRefreshPress"/>
+                <Button
+                    id="closeButton"
+                    visible="false"
+                    tooltip="Close"
+                    icon="sap-icon://decline"
+                    press="onClosePress"/>
+            </OverflowToolbar>
+        </headerToolbar>
+
+        <content>
+
+            <!-- KPI Summary Bar -->
+            <HBox
+                class="sapUiSmallMarginBeginEnd sapUiSmallMarginTopBottom"
+                alignItems="Center"
+                wrap="Wrap">
+
+                <VBox class="sapUiSmallMarginEnd" alignItems="Center">
+                    <ObjectNumber
+                        number="{vm>/totalCount}"
+                        unit="Total"
+                        state="None"
+                        emphasized="true"/>
+                </VBox>
+                <VBox class="sapUiSmallMarginEnd" alignItems="Center">
+                    <ObjectNumber
+                        number="{vm>/assembledCount}"
+                        unit="Complete"
+                        state="Success"
+                        emphasized="true"/>
+                </VBox>
+                <VBox class="sapUiSmallMarginEnd" alignItems="Center">
+                    <ObjectNumber
+                        number="{vm>/pendingCount}"
+                        unit="Pending"
+                        state="Warning"
+                        emphasized="true"/>
+                </VBox>
+                <VBox class="sapUiSmallMarginEnd" alignItems="Center">
+                    <ObjectNumber
+                        number="{vm>/backflushCount}"
+                        unit="Backflush"
+                        state="Information"
+                        emphasized="true"/>
+                </VBox>
+                <ToolbarSpacer/>
+                <Text
+                    text="{= 'Updated: ' + ${vm>/lastRefreshed} }"
+                    visible="{= !!${vm>/lastRefreshed} }"
+                    class="sapUiSmallText"/>
+            </HBox>
+
+            <!-- Filter Toolbar -->
+            <Toolbar class="sapUiSmallMarginBeginEnd">
+                <SearchField
+                    id="searchField"
+                    placeholder="Search component, description or step..."
+                    width="20rem"
+                    liveChange="onSearchLive"
+                    search="onSearch"/>
+                <Label text="Status:" class="sapUiSmallMarginBegin sapUiSmallMarginEnd"/>
+                <Select id="statusFilter" change="onStatusFilter" width="9rem">
+                    <items>
+                        <core:Item key="ALL"      text="All"/>
+                        <core:Item key="PENDING"  text="Pending"/>
+                        <core:Item key="CONSUMED" text="Consumed"/>
+                    </items>
+                </Select>
+                <Label text="Backflush:" class="sapUiSmallMarginBegin sapUiSmallMarginEnd"/>
+                <Select id="backflushFilter" change="onBackflushFilter" width="9rem">
+                    <items>
+                        <core:Item key="ALL"  text="All"/>
+                        <core:Item key="YES"  text="Yes"/>
+                        <core:Item key="NO"   text="No"/>
+                    </items>
+                </Select>
+            </Toolbar>
+
+            <!-- Components Table -->
+            <Table
+                id="componentsTable"
+                items="{vm>/components}"
+                busy="{vm>/busy}"
+                busyIndicatorDelay="0"
+                growing="true"
+                growingThreshold="50"
+                growingScrollToLoad="true"
+                noDataText="No components found. Select an SFC to load data."
+                class="sapUiSmallMarginBeginEnd">
+
+                <headerToolbar>
+                    <Toolbar>
+                        <Title text="Component List" level="H5"/>
+                        <ToolbarSpacer/>
+                        <Text text="{= ${vm>/totalCount} + ' items'}"/>
+                    </Toolbar>
+                </headerToolbar>
+
+                <columns>
+                    <Column width="3.5rem" hAlign="End">
+                        <Text text="Seq"/>
+                    </Column>
+                    <Column minScreenWidth="Tablet" demandPopin="false">
+                        <Text text="Component"/>
+                    </Column>
+                    <Column>
+                        <Text text="Description"/>
+                    </Column>
+                    <Column width="5rem" hAlign="End">
+                        <Text text="Required"/>
+                    </Column>
+                    <Column width="5rem" hAlign="End">
+                        <Text text="Assembled"/>
+                    </Column>
+                    <Column width="5.5rem" hAlign="End">
+                        <Text text="Remaining"/>
+                    </Column>
+                    <Column width="7rem" hAlign="Center">
+                        <Text text="Status"/>
+                    </Column>
+                    <Column width="4.5rem" minScreenWidth="Desktop" demandPopin="true">
+                        <Text text="Step"/>
+                    </Column>
+                    <Column width="7rem" minScreenWidth="Desktop" demandPopin="true">
+                        <Text text="Storage Loc."/>
+                    </Column>
+                    <Column width="9rem" minScreenWidth="Desktop" demandPopin="true">
+                        <Text text="Reservation Order"/>
+                    </Column>
+                    <Column width="8rem" minScreenWidth="Desktop" demandPopin="true">
+                        <Text text="Reservation No."/>
+                    </Column>
+                    <Column width="8rem" minScreenWidth="Desktop" demandPopin="true">
+                        <Text text="Warehouse No."/>
+                    </Column>
+                    <Column width="6rem" hAlign="Center" minScreenWidth="Desktop" demandPopin="true">
+                        <Text text="Backflush"/>
+                    </Column>
+                </columns>
+
+                <items>
+                    <ColumnListItem
+                        highlight="{
+                            path: 'vm>remainingQuantity',
+                            formatter: '.fmtRowHighlight'
+                        }"
+                        type="Inactive">
+                        <cells>
+                            <Text text="{vm>componentSequence}"/>
+
+                            <ObjectIdentifier
+                                title="{vm>component}"
+                                titleActive="false"/>
+
+                            <Text text="{vm>componentDescription}" wrapping="false"/>
+
+                            <Text text="{vm>requiredQuantity}" textAlign="End"/>
+
+                            <Text text="{vm>assembledQuantity}" textAlign="End"/>
+
+                            <ObjectNumber
+                                number="{vm>remainingQuantity}"
+                                textAlign="End"
+                                state="{
+                                    path: 'vm>remainingQuantity',
+                                    formatter: '.fmtStatusState'
+                                }"/>
+
+                            <ObjectStatus
+                                text="{
+                                    parts: ['vm>assembledQuantity','vm>requiredQuantity'],
+                                    formatter: '.fmtStatusText'
+                                }"
+                                state="{
+                                    path: 'vm>remainingQuantity',
+                                    formatter: '.fmtStatusState'
+                                }"
+                                icon="{
+                                    path: 'vm>remainingQuantity',
+                                    formatter: '.fmtStatusIcon'
+                                }"/>
+
+                            <Text text="{vm>stepId}"/>
+
+                            <Text text="{vm>storageLocation}"/>
+
+                            <Text text="{vm>reservationOrderNumber}"/>
+
+                            <Text text="{vm>reservationItemNumber}"/>
+
+                            <Text text="{vm>warehouseNumber}"/>
+
+                            <ObjectStatus
+                                text="{
+                                    path: 'vm>backflushEnabled',
+                                    formatter: '.fmtBackflushText'
+                                }"
+                                state="{
+                                    path: 'vm>backflushEnabled',
+                                    formatter: '.fmtBackflushState'
+                                }"
+                                icon="{
+                                    path: 'vm>backflushEnabled',
+                                    formatter: '.fmtBackflushIcon'
+                                }"/>
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+
+        </content>
+    </Panel>
+</mvc:View>

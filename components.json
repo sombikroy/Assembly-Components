@@ -1,0 +1,15 @@
+{
+	"components": [
+		{
+			"id": "assemblycomponent",
+			"type": "VIEW_PLUGIN",
+			"allowMultipleInstances": false,
+			"name": "sb.custom.plugins.assemblycomponent",
+			"propertyEditor": "sb.custom.plugins.assemblycomponent.builder.PropertyEditor",
+			"i18n": "sb.custom.plugins.assemblycomponent.i18n.i18n",
+            "productionProcessEnabled": false,
+           "productionProcessTitle": "assemblycomponent",
+			"supportedPodTypes": ["OPERATION","ORDER"]
+		}   
+	]
+}
